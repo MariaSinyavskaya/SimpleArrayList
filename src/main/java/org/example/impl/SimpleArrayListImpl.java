@@ -30,7 +30,9 @@ public class SimpleArrayListImpl implements SimpleArrayList {
     @Override
     public Integer add(Integer item) {
         validateItem(item);
-        resize();
+        if (size == elements.length) {
+            grow();
+        }
         elements[size++] = item;
         return item;
     }
@@ -39,7 +41,9 @@ public class SimpleArrayListImpl implements SimpleArrayList {
     public Integer add(int index, Integer item) {
         validateIndex(index);
         validateItem(item);
-        resize();
+        if (size == elements.length) {
+            grow();
+        }
         if (index == size) {
             elements[size++] = item;
             return item;
@@ -85,7 +89,7 @@ public class SimpleArrayListImpl implements SimpleArrayList {
     public boolean contains(Integer item) {
         validateItem(item);
         Integer[] elementsCopy = toArray();
-        sortSelection(elementsCopy);
+        sort(elementsCopy);
         return binarySearch(elementsCopy, item);
     }
 
@@ -162,22 +166,34 @@ public class SimpleArrayListImpl implements SimpleArrayList {
         }
     }
 
-    private void resize() {
-        if (size >= elements.length) {
-            Arrays.copyOf(elements, elements.length + DEFAULT_CAPACITY);
+    private void grow() {
+        elements = Arrays.copyOf(elements, size + size / 2);
+
+    }
+
+    private void sort(Integer[] arr) {
+        quickSort(arr, 0, arr.length - 1);
+    }
+
+    private void quickSort(Integer[] arr, int begin, int end) {
+        if (begin < end) {
+            int partitionIndex = partition(arr, begin, end);
+
+            quickSort(arr, begin, partitionIndex - 1);
+            quickSort(arr, partitionIndex + 1, end);
         }
     }
 
-    private void sortSelection(Integer[] arr) {
-        for (int i = 0; i < arr.length - 1; i++) {
-            int minElementIndex = i;
-            for (int j = i + 1; j < arr.length; j++) {
-                if (arr[j] < arr[minElementIndex]) {
-                    minElementIndex = j;
-                }
+    private int partition(Integer[] arr, int begin, int end) {
+        int pivot = arr[end];
+        int i = (begin - 1);
+        for (int j = begin; j < end; j++) {
+            if (arr[j] <= pivot) {
+                swapElements(arr, i, j);
             }
-            swapElements(arr, i, minElementIndex);
         }
+        swapElements(arr, i + 1, end);
+        return i + 1;
     }
 
     private void swapElements(Integer[] arr, int indexA, int indexB) {
